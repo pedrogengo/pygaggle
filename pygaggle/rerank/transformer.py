@@ -147,6 +147,7 @@ class DuoT5(Reranker):
         texts = deepcopy(texts)
         doc_pairs = list(permutations(texts, 2))
         scores = defaultdict(float)
+        pairs_scores = defaultdict(dict())
         batch_input = DuoQueryDocumentBatch(query=query, doc_pairs=doc_pairs)
         for batch in self.tokenizer.traverse_duo_query_document(batch_input):
             with torch.cuda.amp.autocast(enabled=self.use_amp):
@@ -163,13 +164,14 @@ class DuoT5(Reranker):
                 batch_scores = torch.nn.functional.softmax(batch_scores, dim=1)
                 batch_probs = batch_scores[:, 1].tolist()
             for doc, score in zip(batch.doc_pairs, batch_probs):
+                pairs_scores[doc[0].metadata['docid']][doc[1].metadata['docid']] = score
                 scores[doc[0].metadata['docid']] += score
                 scores[doc[1].metadata['docid']] += (1 - score)
 
         for text in texts:
             text.score = scores[text.metadata['docid']]
 
-        return texts
+        return texts, pairs_scores
 
 
 class UnsupervisedTransformerReranker(Reranker):
