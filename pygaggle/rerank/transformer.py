@@ -147,7 +147,7 @@ class DuoT5(Reranker):
         texts = deepcopy(texts)
         doc_pairs = list(permutations(texts, 2))
         scores = defaultdict(float)
-        pairs_scores = defaultdict(dict())
+        pairs_scores = defaultdict(lambda: defaultdict(int))
         batch_input = DuoQueryDocumentBatch(query=query, doc_pairs=doc_pairs)
         for batch in self.tokenizer.traverse_duo_query_document(batch_input):
             with torch.cuda.amp.autocast(enabled=self.use_amp):

@@ -69,7 +69,8 @@ class Reranker:
     def rerank(self, query: Query, texts: List[Text]) -> List[Text]:
         """Sorts a list of texts
         """
-        return sorted(self.rescore(query, texts), key=lambda x: x.score, reverse=True)
+        agg_scores, single_scores = self.rescore(query, texts)
+        return sorted(agg_scores, key=lambda x: x.score, reverse=True), single_scores
 
     @abc.abstractmethod
     def rescore(self, query: Query, texts: List[Text]) -> List[Text]:
